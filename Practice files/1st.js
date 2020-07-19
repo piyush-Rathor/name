@@ -1,0 +1,1 @@
+console.log('hello from js guys');//Just a console.loghgfhj('Helhjgvjhgjlo From Js')
