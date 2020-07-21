@@ -30,7 +30,7 @@ exports.postAddProduct = (req, res, next) => {//exicute after filling Form and t
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll().then(Product=>{//Sare k sare product uthaye database me se and file render ki n products ko send kar
+  req.user.getProducts().then(Product=>{//Sare k sare product uthaye database me se and file render ki n products ko send kar
     res.render('admin/products',{
       prods:Product,
       pageTitle:'Admin Products',
@@ -38,14 +38,17 @@ exports.getProducts = (req, res, next) => {
     });
   });
 };
-exports.getEditProduct = (req, res, next) => {//Updating Product
+exports.getEditProduct = (req, res, next) => {
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId)//findByPk Find ById ka new version h baki sa h bas etna replace karana h
-    .then(product => {
+  req.user
+    .getProducts({ where: { id: prodId } })
+    // Product.findByPk(prodId)
+    .then(products => {
+      const product = products[0];
       if (!product) {
         return res.redirect('/');
       }
@@ -58,7 +61,6 @@ exports.getEditProduct = (req, res, next) => {//Updating Product
     })
     .catch(err => console.log(err));
 };
-
 exports.postEditProduct = (req, res, next) => {//ye tab call hoga jab ham edit ka form submit kar denge 
   const prodId = req.body.productId;//ye hamane new value req.body method se
   const updatedTitle = req.body.title;
@@ -94,6 +96,19 @@ exports.postDeleteProduct = (req, res, next) => {
     })
     .catch(err => console.log(err));
 };
+exports.postCartDeleteProduct=(req,res,next)=>{
+  const prodId=req.body.productId;
+  req.user.getCart(cart=>{
+    return cart.getProducts({where:{id:prodId}});
+  })
+  .then(products=>{
+    const product=products[0];
+    return product.cartItem.destroy();
+  }).then(result=>{
+    res.redirect('/cart');
+  })
+  .catch(err=>console.log(err));
+}
 
 /*basically controlllers m ham sari files ko ejs file ko render karte h  
 specific requarment k regArding specfic controllers ko render kar rhe h 

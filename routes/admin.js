@@ -22,6 +22,7 @@ router.post('/edit-product',adminController.postEditProduct);//ye route hamane e
 
 router.post('/delete-product', adminController.postDeleteProduct);
 
+
 module.exports = router;//es nam se export kar di 
 /* 
 ham es file m url ko manage kar rhe h or ye jitane b url,s h jinhe ham managae kar rhe h unhe user sidhe jake b exis kar 
