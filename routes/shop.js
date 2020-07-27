@@ -10,19 +10,19 @@ router.get('/', shopController.getIndex);//Home directry p kya display ho rha ye
 
 router.get('/products', shopController.getProducts);
 
-router.get('/products/:productId',shopController.getProduct);//yha p : bta rha h k :k bad ka part kuch b ho ese chala do productId m ese store kar lo 
+// router.get('/products/:productId',shopController.getProduct);//yha p : bta rha h k :k bad ka part kuch b ho ese chala do productId m ese store kar lo 
 
-router.get('/cart', shopController.getCart);
+// router.get('/cart', shopController.getCart);
 
-router.post('/cart', shopController.postCart);//use for clicking in form submition of add to cart
+// router.post('/cart', shopController.postCart);//use for clicking in form submition of add to cart
 
-router.post('/cart-delete-item', shopController.postCartDeleteProduct);
+// router.post('/cart-delete-item', shopController.postCartDeleteProduct);
 
-router.post('/create-order',shopController.postOrder);
+// router.post('/create-order',shopController.postOrder);
 
-router.get('/orders', shopController.getOrders);
+// router.get('/orders', shopController.getOrders);
 
-router.get('/checkout', shopController.getCheckout);
+// router.get('/checkout', shopController.getCheckout);
 
 module.exports =router;
 /*

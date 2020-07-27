@@ -1,12 +1,33 @@
-//ye file require ki gyi h modules k product.js m or 
-const Sequelize=require('sequelize');
+const mongodb=require('mongodb');
+const MongoClient=mongodb.MongoClient;
 
-const sequelize=new Sequelize('node-complete','root','Piyush@123',{
-    dialect:'mysql',
-    host:'localhost'
-});
-module.exports=sequelize;
-//ye code jab server on (ya sab sync call hoga tab chalega )
-//esme jo code h wo ye h k mysql database , jake chek karo k koi schema h jiska nam node complete ho 
-//fir hamanw usko root btaya password diya dialect se ye braya k mysql hi h 
-//n fir ham usko export kar diye h jo ham ese dusari jagah se b call kar sake 
+var _db;
+
+const mongoConnect=(callback)=>{
+    MongoClient.connect('mongodb+srv://Piyush123:Piyush123@cluster0.v594s.mongodb.net/shop?retryWrites=true&w=majority')
+    .then(client =>{
+        console.log("Connected");
+        _db=client.db();
+        // console.log(_db);
+        // console.log(getdb);
+        callback();
+    }).catch(err=>{
+        console.log(err);
+    throw err;
+    });
+};
+const getdb = () => {
+    console.log(_db);
+    if (_db) {
+      return _db;
+    }
+    throw 'No database found!';
+  };
+  
+
+// module.exports=mongoConnect;
+exports.mongoConnect=mongoConnect;
+exports.getdb=getdb;
+// module.exports=getdb;
+
+

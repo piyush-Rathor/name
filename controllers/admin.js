@@ -8,29 +8,24 @@ exports.getAddProduct = (req, res, next) => {//Ek name less fx bnaya or usko exp
     editing:false
   });
 };
-//sequelize use hua
+// //sequelize use hua
 exports.postAddProduct = (req, res, next) => {//exicute after filling Form and take the data from input texts 
   const title = req.body.title;//sare variable user se liye and variables m asine kiye and niche pass pass kar diye 
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  req.user
-  .createProduct({
-      title:title,//Creates method :-create,s a new eliment based on that model and immideatly saved into database.
-      price:price,
-      imageUrl:imageUrl,
-      description:description
-  })
+  const product=new Product(title,price,description,imageUrl);
+  product.save()
   .then(result=>{//matlab creates method eska eliment bnaega end than kar kar dega database m immediatly/Users/piyushrathor/Downloads/Node_js_Y_Udemy-master/data/cart.json
     //console.log(result); yar fargi m console bharata 
-    
+    console.log(result);
     res.redirect('/admin/products');
   })
   .catch(err=>console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
-  req.user.getProducts().then(Product=>{//Sare k sare product uthaye database me se and file render ki n products ko send kar
+  Product.fetchAll().then(Product=>{//Sare k sare product uthaye database me se and file render ki n products ko send kar
     res.render('admin/products',{
       prods:Product,
       pageTitle:'Admin Products',
@@ -39,16 +34,16 @@ exports.getProducts = (req, res, next) => {
   });
 };
 exports.getEditProduct = (req, res, next) => {
+  // console.log("kjbh");
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  req.user
-    .getProducts({ where: { id: prodId } })
+  Product.findById(prodId)
     // Product.findByPk(prodId)
-    .then(products => {
-      const product = products[0];
+    .then(product => {
+      // console.log(product+"\n\n\n");
       if (!product) {
         return res.redirect('/');
       }
@@ -67,16 +62,16 @@ exports.postEditProduct = (req, res, next) => {//ye tab call hoga jab ham edit k
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
-  Product.findByPk(prodId)//ye id edit k form m hiddenly aa rhi h 
-    .then(product => {
-      product.title = updatedTitle;//bas hamane new wali update kar di har jagah 
-      product.price = updatedPrice;
-      product.description = updatedDesc;
-      product.imageUrl = updatedImageUrl;
-      return product.save();
-    })
+    const product =new Product(
+      updatedTitle,
+      updatedPrice,
+      updatedDesc,
+      updatedImageUrl,
+      prodId
+    );
+    product.save()
     .then(result => {
-      console.log('UPDATED PRODUCT!');
+      console.log('UPDATED PRODUCT!\n\n');
       res.redirect('/admin/products');
     })
     .catch(err => console.log(err));//agar error ayi to pakad lo 
@@ -86,30 +81,25 @@ exports.postEditProduct = (req, res, next) => {//ye tab call hoga jab ham edit k
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;//esme b productId hiddenly ja rhi h usko leliya h uspe methors laga h
   // console.log(prodId);
-  Product.findByPk(prodId)
-    .then(product => {//jo findByPk ne lotaya wo esme stor kar liya 
-      return product.destroy();//ye method b sequilize ka hi h 
-    })
-    .then(result => {
-      console.log('DESTROYED PRODUCT');
-      res.redirect('/admin/products');
-    })
-    .catch(err => console.log(err));
+  Product.deleteById(prodId).then(()=>{
+    res.redirect('/admin/products');
+    console.log("Deleyed Products");
+  }).catch(err=>console.log(err));
 };
-exports.postCartDeleteProduct=(req,res,next)=>{
-  const prodId=req.body.productId;
-  req.user.getCart(cart=>{
-    return cart.getProducts({where:{id:prodId}});
-  })
-  .then(products=>{
-    const product=products[0];
-    return product.cartItem.destroy();
-  }).then(result=>{
-    res.redirect('/cart');
-  })
-  .catch(err=>console.log(err));
-}
+// exports.postCartDeleteProduct=(req,res,next)=>{
+//   const prodId=req.body.productId;
+//   req.user.getCart(cart=>{
+//     return cart.getProducts({where:{id:prodId}});
+//   })
+//   .then(products=>{
+//     const product=products[0];
+//     return product.cartItem.destroy();
+//   }).then(result=>{
+//     res.redirect('/cart');
+//   })
+//   .catch(err=>console.log(err));
+// }
 
-/*basically controlllers m ham sari files ko ejs file ko render karte h  
-specific requarment k regArding specfic controllers ko render kar rhe h 
-*/
+// /*basically controlllers m ham sari files ko ejs file ko render karte h  
+// specific requarment k regArding specfic controllers ko render kar rhe h 
+// */
