@@ -14,7 +14,7 @@ exports.postAddProduct = (req, res, next) => {//exicute after filling Form and t
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product=new Product(title,price,description,imageUrl);
+  const product=new Product(title,price,description,imageUrl,null,req.user._id);
   product.save()
   .then(result=>{//matlab creates method eska eliment bnaega end than kar kar dega database m immediatly/Users/piyushrathor/Downloads/Node_js_Y_Udemy-master/data/cart.json
     //console.log(result); yar fargi m console bharata 
