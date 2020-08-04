@@ -1,5 +1,5 @@
 //Ye file import ki gyi h app.js m or yh ap b routing handel ki jaegi esliye hamane yha p router nam ka variable bnaya
-// const path = require('path');
+const path = require('path');
 
 const express = require('express');// Q k ye js file h yha b express import kiya ...
 
@@ -7,13 +7,13 @@ const adminController = require('../controllers/admin');//Yha b ek file require 
 
 const router = express.Router();//Create router q k ye file se handle ki ja rhi h matlab ja rhi h ..es file ko app.js m export kar rhe na esliye
 
-// // /admin/add-product => GET
+// // // /admin/add-product => GET
 router.get('/add-product', adminController.getAddProduct);// /admin/add-product => GET es url p jab get method hoga tab chalega jo ki call kar rha file ko jo hamane pahale import ki thi
 
-// // /admin/products => GET
+// // // /admin/products => GET
 router.get('/products', adminController.getProducts);// /admin/products => GET ...es url p jab get method hoga tab chalega jo ki call kar rha file ko jo hamane pahale import ki thi
 
-// // /admin/add-product => POST
+// // // /admin/add-product => POST
 router.post('/add-product', adminController.postAddProduct);// /admin/add-product => POST..es url p jab get method hoga tab chalega jo ki call kar rha file ko jo hamane pahale import ki th
 
 router.get('/edit-product/:productId', adminController.getEditProduct);// /admin/add-product => POST..es url p jab get method hoga tab chalega jo ki call kar rha file ko jo hamane pahale import ki th

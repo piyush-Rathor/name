@@ -1,53 +1,54 @@
 //Ye file require ki gyi h admin.js rooutes folder m 
-const Product = require('../models/product');//Ye b ek file require kar rha jiska address given h
+const Product = require('../models/product');
 
-exports.getAddProduct = (req, res, next) => {//Ek name less fx bnaya or usko export kiya with a name
+exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {//res.render method h jo files ko render karata or es jagah se file render karani h  or engine ko declayer wact hamane hamane views folder ka address de diya tha
     pageTitle: 'Add Product', // these variable we r passing dynamicalyy addprojuct.ejs m jake layout m 
     path: '/admin/add-product',//ye variable addproduct.ejs m jake navigater m path m jaega 
-    editing:false
+    editing:false//Actully Ham ek hi page ko do jagah render kar rhe h ye usme use hua eske base p hi hamane pata lagay h kon sa page h
   });
 };
-// //sequelize use hua
-exports.postAddProduct = (req, res, next) => {//exicute after filling Form and take the data from input texts 
-  const title = req.body.title;//sare variable user se liye and variables m asine kiye and niche pass pass kar diye 
+exports.postAddProduct = (req, res, next) => {
+  const title = req.body.title; //ye ek method h jisase ham boxes k andar se data utha sakate h
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product=new Product(title,price,description,imageUrl,null,req.user._id);
-  product.save()
-  .then(result=>{//matlab creates method eska eliment bnaega end than kar kar dega database m immediatly/Users/piyushrathor/Downloads/Node_js_Y_Udemy-master/data/cart.json
-    //console.log(result); yar fargi m console bharata 
-    console.log(result);
+  const product=new Product({
+    title:title,
+    price:price,
+    description:description,
+    imageUrl:imageUrl,
+    userId:req.user//according to max if v wrote req.user mongoose will automatically tae id but in practical ye ni hua
+});
+  product.save()//save method mongoose ka h 
+  .then(result=>{
+    console.log('Created Product');
     res.redirect('/admin/products');
   })
   .catch(err=>console.log(err));
 };
-
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll().then(Product=>{//Sare k sare product uthaye database me se and file render ki n products ko send kar
+  Product.find()//find method mongoose ka h ye sare eliment lota deta agar ham filter lagaenge to selective lotaega
+  .then(Products=>{
     res.render('admin/products',{
-      prods:Product,
+      prods:Products,
       pageTitle:'Admin Products',
       path:'/admin/products'
     });
   });
 };
 exports.getEditProduct = (req, res, next) => {
-  // console.log("kjbh");
-  const editMode = req.query.edit;
-  if (!editMode) {
-    return res.redirect('/');
+  const editMode = req.query.edit;//basically ham ek hi page do jagah render kar rhe h to uska chek kar rhe h chek kar rhe h edit mod h ka na 
+  if (!editMode) {//agar na  h to chal bhaiya yha se
+    return res.redirect('/');//redirect kar diya n return ka matlab ye h k aage ka code na chale
   }
-  const prodId = req.params.productId;
-  Product.findById(prodId)
-    // Product.findByPk(prodId)
-    .then(product => {
-      // console.log(product+"\n\n\n");
+  const prodId = req.params.productId;//fetch ki id from web page 
+  Product.findById(prodId)//product uthaya
+    .then(product => {//product nam k var m store kiya us priticular product ko jisako edit karana h 
       if (!product) {
-        return res.redirect('/');
+        return res.redirect('/');//redirect kar diya n return ka matlab ye h k aage ka code na chale
       }
-      res.render('admin/edit-product', {
+      res.render('admin/edit-product', {//bas page send kar diya
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
         editing: editMode,
@@ -62,43 +63,27 @@ exports.postEditProduct = (req, res, next) => {//ye tab call hoga jab ham edit k
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
-    const product =new Product(
-      updatedTitle,
-      updatedPrice,
-      updatedDesc,
-      updatedImageUrl,
-      prodId
-    );
-    product.save()
-    .then(result => {
-      console.log('UPDATED PRODUCT!\n\n');
-      res.redirect('/admin/products');
-    })
+   Product.findById(prodId).then(product=>{//findById method se perticular product uthaya ("findById method mongoose ka h hamane bnaya ni h")
+     product.title=updatedTitle;//sab value ko update kiya....
+     product.description=updatedDesc;
+     product.imageUrl=updatedImageUrl;
+     product.price=updatedPrice;
+    product.save();//Save method mongoose ka predifine method h hamane bnaya ni h 
+    return res.redirect('/admin/products');//return lagane se redirect aage ka code exicute ni hoga..jese yha console ni hoga
+    console.log("\n\n\ndfgfgds");//ye code exixute hi ni hoga agar redirect m return hata de chalega 
+
+   })
     .catch(err => console.log(err));//agar error ayi to pakad lo 
 };
-
-
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;//esme b productId hiddenly ja rhi h usko leliya h uspe methors laga h
   // console.log(prodId);
-  Product.deleteById(prodId).then(()=>{
-    res.redirect('/admin/products');
+  Product.findByIdAndRemove(prodId).then(()=>{//FindByIdAndRemove method b mongoose ka h eska kam h id lena uski bas del kar dega
     console.log("Deleyed Products");
+    res.redirect('/admin/products');
   }).catch(err=>console.log(err));
 };
-// exports.postCartDeleteProduct=(req,res,next)=>{
-//   const prodId=req.body.productId;
-//   req.user.getCart(cart=>{
-//     return cart.getProducts({where:{id:prodId}});
-//   })
-//   .then(products=>{
-//     const product=products[0];
-//     return product.cartItem.destroy();
-//   }).then(result=>{
-//     res.redirect('/cart');
-//   })
-//   .catch(err=>console.log(err));
-// }
+
 
 // /*basically controlllers m ham sari files ko ejs file ko render karte h  
 // specific requarment k regArding specfic controllers ko render kar rhe h 
