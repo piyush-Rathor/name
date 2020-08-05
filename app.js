@@ -14,6 +14,8 @@ app.set('views', 'views');//folder diya views ka anf folder ka nam batya
 
 const adminRoutes = require('./routes/admin');//router File ko require kiya for handling router
 const shopRoutes = require('./routes/shop');//router File ko require kiya for handling router
+const authRoutes = require('./routes/auth');
+
 
 app.use(bodyParser.urlencoded({ extended: false }));//body parser m use hota h 
 app.use(express.static(path.join(__dirname, 'public')));//css FIle ka path set kiya h
@@ -29,6 +31,7 @@ app.use((req, res, next) => {//ye middleware hamare project ko hamare dummy user
 
 app.use('/admin', adminRoutes);//AAge jo /admin laga wo filtration k liye h ye kisi perticular url p tab hi chalega jab uske aage admin hoge 
 app.use(shopRoutes);//ye sidhe router ja rhi  h
+app.use(authRoutes);
 app.use(errorController.get404);//Router for error 
 
 mongoose//using MOngoose
