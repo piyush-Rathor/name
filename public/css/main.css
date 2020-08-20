@@ -58,9 +58,20 @@ form {
   padding: 0;
 }
 
-.main-header__item a {
+.main-header__item a{
   text-decoration: none;
   color: white;
+}
+.main-header__item button{
+  text-decoration: none;
+  background-color: #00695c;
+  border:0;
+  color: white;
+}
+.main-header__item button:hover,
+.main-header__item button:active,
+.main-header__item button.active {
+  color: #ffeb3b;
 }
 
 .main-header__item a:hover,
