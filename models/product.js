@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose');//mongoose ki madad se schema bna rheh na to mongoose require kiya 
 
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema;//constructure liya
 
-const productSchema = new Schema({
+const productSchema = new Schema({//declayer kar diya schema ka type matlab esi esi imfomation 
   title: {
     type: String,
     required: true

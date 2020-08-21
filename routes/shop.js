@@ -4,7 +4,7 @@ const express = require('express');
 
 const shopController = require('../controllers/shop');
 
-const isAuth=require('../middleware/is-auth');
+const isAuth=require('../middleware/is-auth');//middleware add kiya check karane k liye user authenticated k na  
 
 const router = express.Router();
 

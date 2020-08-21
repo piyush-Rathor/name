@@ -27,7 +27,7 @@ const userSchema = new Schema({
 
 userSchema.methods.addToCart = function(product) {
   const cartProductIndex = this.cart.items.findIndex(cp => {
-    return cp.productId.toString() === product._id.toString();
+    return cp.productId.toString() === product._id.toString();//it return the index of the perticular eliment jo matc karega 
   });
   let newQuantity = 1;
   const updatedCartItems = [...this.cart.items];
@@ -50,10 +50,10 @@ userSchema.methods.addToCart = function(product) {
 
 userSchema.methods.removeFromCart = function(productId) {
   const updatedCartItems = this.cart.items.filter(item => {
-    return item.productId.toString() !== productId.toString();
+    return item.productId.toString() !== productId.toString();//us condition wale hata diya cart se 
   });
   this.cart.items = updatedCartItems;
-  return this.save();
+  return this.save();//save kae diya
 };
 
 userSchema.methods.clearCart = function() {

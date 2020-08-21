@@ -1,35 +1,42 @@
 const User = require("../models/user");
 
-const bcrypt=require('bcryptjs');
+const bcrypt=require('bcryptjs');// it is 3rd party package to check password
 
 exports.getLogin=(req,res,next)=>{
-    res.render('auth/login',{
-        path:'/login',
-        pageTitle:'Login',
-        isAuthenticated:false
-    });
+  let message = req.flash('error');//ye tak k liye jab user postLogin se redirect kiya ja rha ho usse email ya password galat dal diya ho uske liye
+  if (message.length > 0) {
+    message = message[0];
+  } else {//or ye else case uske liye jab user sidhe get Login p aaya ho 
+    message = null;
+  }
+  res.render('auth/login', {
+    path: '/login',
+    pageTitle: 'Login',
+    errorMessage: message//jab pahali bar aayega user get Login p to uske pas mesage m null hoga
+  });
 };
 
 exports.postLogin=(req,res,next)=>{
     const email=req.body.email;
     const password=req.body.password;
-    User.findOne({ email: email })
+    User.findOne({ email: email })//FindOne method provided y mongoose ye seach karega sare users m k wo exist kar rha k ni user
     .then(user => {
-      if (!user) {
+      if (!user) {//agar user exist ni kar rha matlab user ne kuch galat dal diya usko massage de diya jaye uske liye 
+        req.flash('error','Invalid email or password');
         return res.redirect('/login');
       }
       bcrypt
-        .compare(password, user.password)
+        .compare(password, user.password)//yha p chek h rha h password sahi h k na 
         .then(doMatch => {
-          if (doMatch) {
+          if (doMatch) {//agar match kar gya 
             req.session.isLoggedIn = true;
-            req.session.user = user;
-            return req.session.save(err => {
+            req.session.user = user;//yha p jo session vanega wo user b content karega ans well is Loggedin b true rakhega q k user inter kiya h na 
+            return req.session.save(err => {//to session ko save kar do
               console.log(err);
               res.redirect('/');
             });
           }
-          res.redirect('/login');
+          res.redirect('/login');//agar match na kiya to ...redirect n c massage
         })
         .catch(err => {
           console.log(err);
@@ -40,16 +47,22 @@ exports.postLogin=(req,res,next)=>{
 };
 
 exports.postLogout=(req,res,next)=>{
-    req.session.destroy((err)=>{
+    req.session.destroy((err)=>{//logout matlab session uda do
         res.redirect('/');
     })
 }
 
 exports.getSignup=(req,res,next)=>{
+  let message = req.flash('error');//wahi upar jesa ratta h agar sidhe aaya to page serve kar do
+  if (message.length > 0) {//agar input galat dal k massage so kar do
+    message = message[0];
+  } else {
+    message = null;
+  }
     res.render('auth/sigup',{
         path:'/signup',
         pageTitle:'Signup',
-        isAuthenticated:false
+        errorMessage: message
     });
 }
 
@@ -57,13 +70,14 @@ exports.postSignup=(req,res,next)=>{
     const email=req.body.email;
     const password=req.body.password;
     const confirmPassword=req.body.confirmPassword;
-    User.findOne({ email: email })
+    User.findOne({ email: email })//Agar user mile
     .then(userDoc => {
-      if (userDoc) {
+      if (userDoc) {//Matlab pahale se exist kar rha user
+        req.flash('error','E-Mail allready Exist pls Pick a diff one');
         return res.redirect('/signup');
-      }
+      }//Agar na matlab new h user
       return bcrypt
-        .hash(password, 12)
+        .hash(password, 12)//ab es password ko hashed password m convert kiya than save kiya 
         .then(hashedPassword => {
           const user = new User({
             email: email,

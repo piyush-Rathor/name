@@ -6,10 +6,10 @@ const adminController = require('../controllers/admin');
 
 const router = express.Router();
 
-const isAuth=require('../middleware/is-auth');
+const isAuth=require('../middleware/is-auth');//eska  kam h chek karana user login wala h ya na 
 
 // /admin/add-product => GET
-router.get('/add-product', isAuth,adminController.getAddProduct);//multiple controller trigger honge
+router.get('/add-product', isAuth,adminController.getAddProduct);//multiple controller trigger honge isAuth check karega k user login wala h ya na
 
 // /admin/products => GET
 router.get('/products', isAuth, adminController.getProducts);
