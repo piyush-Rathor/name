@@ -1,6 +1,17 @@
+const bcrypt=require('bcryptjs');
+// it is 3rd party package to check password
+const nodemailer=require('nodemailer');//import nodemailer to send mails to varify
+
+const sendgridTransport=require('nodemailer-sendgrid-transport');//send Webside using for mail sending
+
 const User = require("../models/user");
 
-const bcrypt=require('bcryptjs');// it is 3rd party package to check password
+const transporter=nodemailer.createTransport(//transporter bnaya using nodemailer 
+  sendgridTransport({//specifie kiya k senggrid ka hi use kar rhe h 
+    auth:{
+      api_key:'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'//api key genrated y shoaib sir account  
+    }
+  }));
 
 exports.getLogin=(req,res,next)=>{
   let message = req.flash('error');//ye tak k liye jab user postLogin se redirect kiya ja rha ho usse email ya password galat dal diya ho uske liye
@@ -87,7 +98,16 @@ exports.postSignup=(req,res,next)=>{
           return user.save();
         })
         .then(result => {
-          res.redirect('/login');
+          res.redirect('/login');//hamane mail bad m send kiya pahale redirect kar diya performance k liye 
+          console.log("Your Mail is Sending...");
+          return transporter.sendMail({
+            to:email,
+            from:'abhisheksirohi19@gmail.com',
+            subject:'Signup succeeded',
+            html:'<h1>You sucsessfully Sighedup</h1>'
+          }) ;
+          }).catch(err=>{
+            console.log(err);
         });
     })
     .catch(err => {
