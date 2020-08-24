@@ -1,7 +1,7 @@
 const Product = require('../models/product');//model require kiya esse constructer mil jaega
 
 exports.getProducts = (req, res, next) => {
-  Product.find()//method provide y mongoose return all product
+  Product.find({userId:req.user._id})//method provide y mongoose return all product
     .then(products => {
       res.render('admin/products', {
         prods: products,
@@ -72,22 +72,24 @@ exports.postEditProduct = (req, res, next) => {
   const updatedDesc = req.body.description;
   Product.findById(prodId)
     .then(product => {
+      if(product.userId.toString()!==req.user._id){
+        return res.redirect('/');
+      }
       product.title = updatedTitle;
       product.price = updatedPrice;
       product.description = updatedDesc;
       product.imageUrl = updatedImageUrl;
-      return product.save();
-    })
-    .then(result => {
-      console.log('UPDATED PRODUCT!');
-      res.redirect('/admin/products');
+      return product.save().then(result => {
+        console.log('UPDATED PRODUCT!');
+        res.redirect('/admin/products');
+    })  
     })
     .catch(err => console.log(err));
 };
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;//id li wahi hidden type se
-  Product.findByIdAndRemove(prodId)//method provided y mongoose
+  Product.deleteOne({_id:prodId,userId:req.user._id})//method provided y mongoose
     .then(() => {
       console.log('DESTROYED PRODUCT');
       res.redirect('/admin/products');

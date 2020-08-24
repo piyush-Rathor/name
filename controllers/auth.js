@@ -1,17 +1,21 @@
 const bcrypt=require('bcryptjs');
 // it is 3rd party package to check password
+const crypto=require('crypto');
+
 const nodemailer=require('nodemailer');//import nodemailer to send mails to varify
 
 const sendgridTransport=require('nodemailer-sendgrid-transport');//send Webside using for mail sending
 
 const User = require("../models/user");
 
-const transporter=nodemailer.createTransport(//transporter bnaya using nodemailer 
-  sendgridTransport({//specifie kiya k senggrid ka hi use kar rhe h 
-    auth:{
-      api_key:'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'//api key genrated y shoaib sir account  
-    }
-  }));
+const transporter=nodemailer.createTransport({//transporter bnaya using nodemailer 
+  service:'gmail',
+  auth:{
+    user:'psrathor16072000@gmail.com',
+    pass:'Piyush@123'
+  }
+  });
+
 
 exports.getLogin=(req,res,next)=>{
   let message = req.flash('error');//ye tak k liye jab user postLogin se redirect kiya ja rha ho usse email ya password galat dal diya ho uske liye
@@ -100,11 +104,21 @@ exports.postSignup=(req,res,next)=>{
         .then(result => {
           res.redirect('/login');//hamane mail bad m send kiya pahale redirect kar diya performance k liye 
           console.log("Your Mail is Sending...");
-          return transporter.sendMail({
+          var mailOptions={
+            from:'psrathor16072000@gmail.com',
             to:email,
-            from:'abhisheksirohi19@gmail.com',
-            subject:'Signup succeeded',
-            html:'<h1>You sucsessfully Sighedup</h1>'
+            subject:'Sending Email Using Gmail',
+            html:`
+            <p>hey dude</p>
+            <h1>This is Tryle Webside ....</h1>
+            `}
+          return  transporter.sendMail(mailOptions,function(error,info){
+            if(error){
+              console.log(error);
+            }
+            else{
+              console.log('Email Sent:'+info.response);
+            }
           }) ;
           }).catch(err=>{
             console.log(err);
@@ -114,6 +128,102 @@ exports.postSignup=(req,res,next)=>{
       console.log(err);
     });
 };
+
+exports.getReset=(req,res,next)=>{
+  let message = req.flash('error');//ye tak k liye jab user postLogin se redirect kiya ja rha ho usse email ya password galat dal diya ho uske liye
+  if (message.length > 0) {
+    message = message[0];
+  } else {//or ye else case uske liye jab user sidhe get Login p aaya ho 
+    message = null;
+  }
+  res.render('auth/reset', {
+    path: '/reset',
+    pageTitle: 'Reset Password',
+    errorMessage: message//jab pahali bar aayega user get Login p to uske pas mesage m null hoga
+  });
+}
+
+exports.postReset=(req,res,next)=>{
+  crypto.randomBytes(32,(err,buffer)=>{
+    if(err){
+      return res.redirect("/reset");
+    }
+    const token=buffer.toString('hex');
+    User.findOne({email:req.body.email}).then(user=>{
+      if(!user){
+        req.flash('error','No account with that eamail Found.');
+        return res.redirect('/reset');
+      }
+      user.resetToken=token;
+      user.resetTokenExpiration=Date.now()+3600000;
+      return user.save();
+    }).then(result=>{
+      res.redirect('/');
+      var mailOptions={
+        from:'psrathor16072000@gmail.com',
+        to:req.body.email,
+        subject:'Sending Email Using Gmail',
+        html:`
+        <p>You are requested to a password!!!</p>
+        <h1>click This <a href="http://localhost:3000/reset/${token}">link</a>to set new Password<h1>
+        `}
+      transporter.sendMail(mailOptions,function(error,info){
+        if(error){
+          console.log(error);
+        }
+        else{
+          console.log('Email Sent:'+info.response);
+        }
+      })
+    }).catch(err=>{
+      console.log(err);
+    })
+  })
+};
+
+exports.getNewPassword=(req,res,next)=>{
+  const token=req.params.token;
+  User.findOne({resetToken:token})//yha date wala system work na kar rha pata na q...esliye hata h/....,{$gt:Date.now()}ye tha comma m ek or condition thi 
+  .then(user=>{
+  let message = req.flash('error');//ye tak k liye jab user postLogin se redirect kiya ja rha ho usse email ya password galat dal diya ho uske liye
+  if (message.length > 0) {
+    message = message[0];
+  } else {//or ye else case uske liye jab user sidhe get Login p aaya ho 
+    message = null;
+  }
+  res.render('auth/new-password', {
+    path: '/new-password',
+    pageTitle: 'New Password',
+    errorMessage: message,//jab pahali bar aayega user get Login p to uske pas mesage m null hoga
+    userId:user._id.toString(),
+    passwordToken:token
+  });
+}).catch(err=>{console.log(err)});
+}
+
+exports.postNewPassword=(req,res,next)=>{
+  const NewPassword=req.body.password;
+  const userId=req.body.userId;
+  const passwordToken=req.body.passwordToken;
+  let resetUser;
+  User.findOne({
+    resetToken:passwordToken,
+    // resetTokenExpiration:{$gt:Date.now()},//Pata na kuch dikkat reset date m compare na kar rha
+    _id:userId
+  }).then(user=>{
+    resetUser=user;
+    return bcrypt.hash(NewPassword,12)
+  }).then(hashedPassword=>{
+    resetUser.password=hashedPassword;
+    resetUser.resetToken=undefined;
+    // resetTokenExpiration=undefined;
+    return resetUser.save();
+  }).then(result=>{
+    res.redirect('/login');
+  }).catch(err=>{
+    console.log(err);
+  })
+}
 
 //here this session is saved in memory and memory is limited or u thougents or one hundred thoagent requests so u can not manage your memory 
 //so now v r going to save session in database
