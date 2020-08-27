@@ -11,11 +11,17 @@
         <form action="/login" method="post" class="login-form">
             <div class="form-control">
                 <label for="E-Mail">E-Mail</label>
-                    <input type="email" name="email" id="email">
+                    <input 
+                    type="email" 
+                    name="email" 
+                    id="email" 
+                    value="<%=oldInput.email%>"                
+                    class="<%=validationErrors.find(e=>e.param==='email')?'invalid':''%>">
             </div>
             <div class="form-control">
                 <label for="password">Password
-                    <input type="password" name="password" id="password">
+                    <input type="password" name="password" id="password" value="<%=oldInput.password%>" class="<%=validationErrors.find(e=>e.param==='password')?'invalid':''%>"
+                    >
                 </label>
             </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">

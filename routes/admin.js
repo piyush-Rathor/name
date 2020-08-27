@@ -1,5 +1,7 @@
 const path = require('path');
 
+const {body}=require('express-validator/check');
+
 const express = require('express');
 
 const adminController = require('../controllers/admin');
@@ -15,11 +17,21 @@ router.get('/add-product', isAuth,adminController.getAddProduct);//multiple cont
 router.get('/products', isAuth, adminController.getProducts);
 
 // /admin/add-product => POST
-router.post('/add-product', isAuth, adminController.postAddProduct);
+router.post('/add-product', [
+    body('title').isString().isLength({min:3}).trim().withMessage('At least 3 Charrcter Long Title'),
+    body('imageUrl').isURL().withMessage("ImageUrl must be a Url"),
+    body('price').isFloat().withMessage("Price is required For float at 2 digit "),
+    body('description').isLength({min:5,max:400}).trim().withMessage("Description At least Contain 5 Char and max 400 Characters")
+],isAuth, adminController.postAddProduct);
 
 router.get('/edit-product/:productId', isAuth, adminController.getEditProduct);
 
-router.post('/edit-product', isAuth, adminController.postEditProduct);
+router.post('/edit-product', [
+    body('title').isString().isLength({min:3}).trim().withMessage('At least 3 Charrcter Long Title'),
+    body('imageUrl').isURL().withMessage("ImageUrl must be a Url"),
+    body('price').isFloat().withMessage("Price is required For float at 2 digit "),
+    body('description').isLength({min:5,max:400}).trim().withMessage("Description At least Contain 5 Char and max 400 Characters")
+], isAuth, adminController.postEditProduct);
 
 router.post('/delete-product', isAuth, adminController.postDeleteProduct);
 
