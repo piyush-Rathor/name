@@ -1,10 +1,9 @@
 const bcrypt=require('bcryptjs');
 // it is 3rd party package to check password
+const {validationResult}=require('express-validator/check');
 const crypto=require('crypto');
 
 const nodemailer=require('nodemailer');//import nodemailer to send mails to varify
-
-const sendgridTransport=require('nodemailer-sendgrid-transport');//send Webside using for mail sending
 
 const User = require("../models/user");
 
@@ -77,7 +76,8 @@ exports.getSignup=(req,res,next)=>{
     res.render('auth/sigup',{
         path:'/signup',
         pageTitle:'Signup',
-        errorMessage: message
+        errorMessage: message,
+        oldInput:{email:'',password:'',confirmPassword:''}
     });
 }
 
@@ -85,13 +85,17 @@ exports.postSignup=(req,res,next)=>{
     const email=req.body.email;
     const password=req.body.password;
     const confirmPassword=req.body.confirmPassword;
-    User.findOne({ email: email })//Agar user mile
-    .then(userDoc => {
-      if (userDoc) {//Matlab pahale se exist kar rha user
-        req.flash('error','E-Mail allready Exist pls Pick a diff one');
-        return res.redirect('/signup');
-      }//Agar na matlab new h user
-      return bcrypt
+    const errors=validationResult(req);
+    if(!errors.isEmpty()){//Agar Aaayi validation m uske liye h ye
+      return res.status(422).render('auth/sigup',{
+        path:'/signup',
+        pageTitle:'Signup',
+        errorMessage:errors.array()[0].msg,
+        oldInput:{email:email,password:password,confirmPassword:confirmPassword},
+        validationErrors:errors.array()
+      })
+    }
+       bcrypt
         .hash(password, 12)//ab es password ko hashed password m convert kiya than save kiya 
         .then(hashedPassword => {
           const user = new User({
@@ -103,7 +107,6 @@ exports.postSignup=(req,res,next)=>{
         })
         .then(result => {
           res.redirect('/login');//hamane mail bad m send kiya pahale redirect kar diya performance k liye 
-          console.log("Your Mail is Sending...");
           var mailOptions={
             from:'psrathor16072000@gmail.com',
             to:email,
@@ -123,10 +126,6 @@ exports.postSignup=(req,res,next)=>{
           }).catch(err=>{
             console.log(err);
         });
-    })
-    .catch(err => {
-      console.log(err);
-    });
 };
 
 exports.getReset=(req,res,next)=>{
