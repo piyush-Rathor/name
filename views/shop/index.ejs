@@ -27,8 +27,12 @@
                                     <%- include('../includes/add-to-cart.ejs', {product: product}) %>
                                 <%}%>                        </div>
                     </article>
+                    
                 <% } %>
             </div>
+            <section class="pagination">
+               <%- include('../includes/pagination.ejs',{currentPage:currentPage,nextPage:nextPage,lastPAge:lastPAge,PreviosPage:PreviosPage,hasnextPage:hasnextPage,hasPreviosPage:hasPreviosPage})%>
+            </section>
         <% } else { %>
             <h1>No Products Found!</h1>
         <% } %>

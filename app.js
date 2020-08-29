@@ -32,7 +32,7 @@ const fileStorage=multer.diskStorage({//multer package ka use karake destination
 })
 
 const fileFilter=(req,file,cb)=>{//fileFilter set kiya h hame es es type ki file hi keval accept karani h
-  if(file.mimetype==='image/png' || file.mimetype=='image/jpg' || file.filename==='image/jpeg'){
+  if(file.mimetype=='image/jpg' || file.mimetype==='image/png' ||  file.mimetype==='image/jpeg'){
     cb(null,true);
   }else{
     cb(null,false);

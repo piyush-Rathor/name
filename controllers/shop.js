@@ -4,15 +4,28 @@ const PDFDocument=require('pdfkit');
 const fs=require('fs');
 const path=require('path');
 
+const ITEMS_PER_PAGE=2;
+
 const Order = require('../models/order');
 
 exports.getProducts = (req, res, next) => {//controller 4 all Products
-  Product.find()//sare k product uthaye method mongoose ka h 
+  const page=+req.query.page||1;
+  let totalitem;
+  Product.find().countDocuments().then(numProducts=>{
+    totalitem=numProducts;
+    return  Product.find().skip((page-1)*ITEMS_PER_PAGE).limit(ITEMS_PER_PAGE)
     .then(products => {
-      res.render('shop/product-list', {
+      res.render('shop/index', {
         prods: products,
-        pageTitle: 'All Products',
-        path: '/products'
+        pageTitle: 'Shop',
+        path: '/',
+        csrfToken:req.csrfToken(),
+        currentPage:page,
+        hasnextPage:ITEMS_PER_PAGE*page<totalitem,
+        hasPreviosPage:page>1,
+        nextPage:page+1,
+        PreviosPage:page-1,
+        lastPAge:Math.ceil(totalitem/ITEMS_PER_PAGE)
       });
     })
     .catch(err => {
@@ -20,6 +33,7 @@ exports.getProducts = (req, res, next) => {//controller 4 all Products
       error.httpStatusCode=500;
       return next(error);
     });
+  })
 };
 
 exports.getProduct = (req, res, next) => {//controller 4 Perticular  Product
@@ -39,13 +53,23 @@ exports.getProduct = (req, res, next) => {//controller 4 Perticular  Product
     });};
 
 exports.getIndex = (req, res, next) => {//4 all Products 
-  Product.find()
+  const page=+req.query.page||1;
+  let totalitem;
+  Product.find().countDocuments().then(numProducts=>{
+    totalitem=numProducts;
+    return  Product.find().skip((page-1)*ITEMS_PER_PAGE).limit(ITEMS_PER_PAGE)
     .then(products => {
       res.render('shop/index', {
         prods: products,
         pageTitle: 'Shop',
         path: '/',
-        csrfToken:req.csrfToken()
+        csrfToken:req.csrfToken(),
+        currentPage:page,
+        hasnextPage:ITEMS_PER_PAGE*page<totalitem,
+        hasPreviosPage:page>1,
+        nextPage:page+1,
+        PreviosPage:page-1,
+        lastPAge:Math.ceil(totalitem/ITEMS_PER_PAGE)
       });
     })
     .catch(err => {
@@ -53,6 +77,9 @@ exports.getIndex = (req, res, next) => {//4 all Products
       error.httpStatusCode=500;
       return next(error);
     });
+  })
+ 
+  // Product.find().countDocument().then
 };
 
 exports.getCart = (req, res, next) => {
@@ -140,7 +167,7 @@ exports.getOrders = (req, res, next) => {
       error.httpStatusCode=500;
       return next(error);
     });};
-    exports.getInvoice = (req, res, next) => {
+exports.getInvoice = (req, res, next) => {
       const orderId = req.params.orderId;
       Order.findById(orderId)
         .then(order => {
