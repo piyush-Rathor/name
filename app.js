@@ -7,6 +7,7 @@ const session=require('express-session');//session require kiya
 const mongoDBStore=require('connect-mongodb-session')(session);//ye ek constructer return karega jisase ham apna obj bnaenge
 const csrf=require('csurf');//ye csrf attacks se bachanek liye h 
 const flash=require('connect-flash');//ye error massage display karane k liye h 
+const multer=require('multer');//
 
 const errorController = require('./controllers/error');//ek controller h eska use karenge ham jab user koi wrong url ko require karega 
 const User = require('./models/user');//User model require kiya wha se export kiya gya h userschema and us schema k kuch fx
@@ -21,21 +22,47 @@ const store=new mongoDBStore({//object bnaya apne database se connect karane k l
 
 const csrfProtection=csrf();//csrf ko fx run kiya ab esko session k bad use karenge
 
+const fileStorage=multer.diskStorage({//multer package ka use karake destination matlab kha save karana h set kar rhe h and name set kar rhe h
+  destination:(req,file,cb)=>{
+    cb(null,'images');
+  },
+  filename:(req,file,cb)=>{
+    cb(null,new Date().toISOString()+'-'+file.originalname)//name diya h date se related
+  }
+})
+
+const fileFilter=(req,file,cb)=>{//fileFilter set kiya h hame es es type ki file hi keval accept karani h
+  if(file.mimetype==='image/png' || file.mimetype=='image/jpg' || file.filename==='image/jpeg'){
+    cb(null,true);
+  }else{
+    cb(null,false);
+  }
+}
+
 app.set('view engine', 'ejs');//ejs ka engine use ho rha h ye btaya 
 app.set('views', 'views');//folder btaya k apne ejs ki files eske andar rakhi h pahala views represent kar rha h k ham ejs ki location de rhe h and dusara folder ka nam
 
 const adminRoutes = require('./routes/admin');//Apne router assine kiye jo ham according to req (of url) render karenge
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
+const { abort } = require('process');
 
 
 app.use(bodyParser.urlencoded({ extended: false }));//use kiya h body-Parser
+app.use(multer({storage:fileStorage,fileFilter:fileFilter}).single('image'));//use kiya h body-Parser(dest:images ....jo buffer m deta fatch ho rha tha image ka use binary m karake dega),FileFilter set kar rha kiskis type ki file ko accept karna h 
 app.use(express.static(path.join(__dirname, 'public')));//ye hamane css k path ko add kiya
+app.use('/images',express.static(path.join(__dirname, 'images')));//yw file 
 
 app.use(session({secret:'my secret',resave:false,saveUninitialized:false,store:store}));//it set the session
 //secret is a massage basically ye ek lambi c string hoti h uses m but hamane abhi ye hi likha,resave false ka mtlb h k har code run ho koi new save na ho,store ka matlab ham database ka path vagera de rhe collection ban jaega esse 
 app.use(csrfProtection);//use kiya csrf protection ko
 app.use(flash());//flash ko use kiya ab ham ese apne controllers m handle karenge
+
+app.use((req,res,next)=>{
+  res.locals.isAuthenticated=req.session.isLoggedIn;//session se pata kiya user login wala h ya na
+  res.locals.csrfToken=req.csrfToken()//csrf token liya
+  next();
+});
 
 app.use((req,res,next)=>{
   if(!req.session.user){//agar user ne login ni kiya h  
@@ -50,26 +77,23 @@ app.use((req,res,next)=>{
         next();
       })
     .catch(err=>{
-      throw new Error(err);
-      // console.log(err);
+      const error=new Error(err);
+      error.httpStatusCode=500;
+      return next(error);
     });
 })
 
-app.use((req,res,next)=>{
-  res.locals.isAuthenticated=req.session.isLoggedIn;//session se pata kiya user login wala h ya na
-  res.locals.csrfToken=req.csrfToken()//csrf token liya
-  next();
-})
+
 app.use('/admin', adminRoutes);//roters use kiye
 app.use(shopRoutes);
 app.use(authRoutes);
-// app.get('/500',errorController.get500);
-app.use((error,req,res,next)=>{
-  res.redirect('/500');
-})
+app.get('/500',errorController.get500);
+
 
 app.use(errorController.get404);//error wala controller use kiya(agar require usrl exist na karata ho to)
-
+app.use((error,req,res,next)=>{
+  res.status(500).render('500', { pageTitle: 'Error', path: '/500',isAuthenticated:req.session.isLoggedIn});
+})
 mongoose
   .connect(
     MONGODB_URI

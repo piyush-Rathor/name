@@ -68,7 +68,6 @@ exports.postLogin=(req,res,next)=>{
             req.session.isLoggedIn = true;
             req.session.user = user;//yha p jo session vanega wo user b content karega ans well is Loggedin b true rakhega q k user inter kiya h na 
             return req.session.save(err => {//to session ko save kar do
-              console.log(err);
               res.redirect('/');
             });
           }
@@ -80,8 +79,7 @@ exports.postLogin=(req,res,next)=>{
             validationErrors:[]
           })        })
         .catch(err => {
-          console.log(err);
-          res.redirect('/login');
+          return next(err);
         });
     })
     .catch(err => console.log(err));
